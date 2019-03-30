@@ -19,15 +19,15 @@ const git = require("isomorphic-git");
 git.plugins.set('fs', fs)
 
 
-function last(ary) {
-  return ary[ary.length-1];
-}
+const last = (ary) => ary[ary.length-1];
 
-  const catchError = (res) => (e) => {
-    console.error(e);
-    res.status(500).send(e);
-  };
+const catchError = (res) => (e) => {
+  console.error(e);
+  res.status(500).send(e);
+};
 
+
+const makePath = (p) => p.join('/');
 
 
 exports.grassland = (root, config) => {
@@ -55,21 +55,20 @@ exports.grassland = (root, config) => {
   let lastFetchedTime = 0;
   let fetchCheck = Promise.resolve();
   const checkRepo = () => {
-    const now = Date.now();
-    if (!fs.existsSync(dir)) {
-      lastFetchedTime = now;
-      fetchCheck = performClone();
-    } else if (config.fetchTime > 0) {
-      if ( (now - lastFetchedTime) > (config.fetchTime * 60 * 1000)) {
+    if (config.fetchTime > 0) {
+      const now = Date.now();
+      if (!fs.existsSync(dir)) {
+        lastFetchedTime = now;
+        fetchCheck = performClone();
+      } else if ( (now - lastFetchedTime) > (config.fetchTime * 60 * 1000)) {
         lastFetchedTime = now;
         fetchCheck = performPull();
       }
     }
     return fetchCheck;
   }
-    
   
-  const getFileByReference = (ref, filepath) =>
+  const getFileByReference = (filepath, ref) =>
         checkRepo()
         .then(() => git.resolveRef({dir, ref}))
         .then((oid) => git.readObject({ dir, oid, filepath, encoding: 'utf8' }))
@@ -79,33 +78,49 @@ exports.grassland = (root, config) => {
         checkRepo()
         .then(() => git.resolveRef({ dir, ref }));
 
-  const baseRE = /(<base\s+href="\/)("\s*\/?>)/i
-  const replaceBase = (fileText, commit) =>
-        fileText.replace(baseRE, '$1' + [ root , 'commit', commit, ''].join('/') + '$2');
+  const baseRE = /(<base\s+href=")\/("\s*)/i  // getting into "the pony, he comes" territory https://is.gd/41FT2p
+  const replaceBase = (fileText, commit, cdn) =>
+        fileText.replace(baseRE, '$1' + makePath([ cdn || '', root , 'commit', commit, '']) + '$2');
 
+  const serveFile = (filepath, ref, cdn, replaceFunction) => 
+        Promise.all([ getFileByReference(filepath, ref), getCommitForRef(ref)])
+        .then(([fileText, commit]) => (replaceFunction || replaceBase)(fileText, commit, cdn));
+
+  const resolveCommit = (sha) => checkRepo().then(() => sha);
   const middleware = (req, res, next) => {
-    const [command, reqtype, reqarg, ...path] = req._parsedUrl.path.split('/').filter(p => p);
+    const [command, reqtype, refId, ...path] = req._parsedUrl.path.split('/').filter(p => p);
 
     if (command === root) {
       if ((reqtype === 'ref') || (reqtype === 'commit')) {
-        const commit =  (reqtype === 'ref') ? getCommitForRef(reqarg):  Promise.resolve(reqarg);
-        const filepath = (config.prefix || '') + path.join('/');
-              
-        return commit.then((oid) => git.readObject({ dir, oid, filepath }))
-          .then((blob) => res.redirect((reqtype === 'ref') ? 302 : 301,
-                                       ['',
-                                        root,
-                                        'blob',
-                                        blob.oid,
-                                        last(path),
-                                       ].join('/')))
+        const getCommit =  (reqtype === 'ref') ? getCommitForRef: resolveCommit;
+        const filepath = (config.prefix || '') + makePath(path);
+
+        return getCommit(refId).then((oid) => git.readObject({ dir, oid, filepath }))
+          .then((blob) => res
+                .set({
+                  'ETag': blob.oid,
+                  'Cache-Control': 'immutable, public',
+                  'Expires': 'Tue Dec 31 2069 16:00:00 GMT-0800'
+                })
+                .redirect((reqtype === 'ref') ? 302 : 301,
+                          makePath(['',
+                                    root,
+                                    'blob',
+                                    blob.oid,
+                                    last(path),
+                                   ])))
           .catch(catchError(res));
       } else if (reqtype === 'blob') {
-        return git.readObject({
-          dir,
-          oid: reqarg,
-          // encoding: 'utf8',
-        }).then((buffer) => res.type(last(path)).send(buffer.object))
+        const oid = refId;
+        return checkRepo()
+          .then(() => git.readObject({dir, oid}))
+          .then(({oid, object}) => res
+                .set({
+                  'ETag': oid,
+                  'Cache-Control': 'immutable, public',
+                  'Expires': 'Tue Dec 31 2069 16:00:00 GMT-0800'
+                })
+                .type(last(path)).send(object))
           .catch(catchError(res));
       }
     }
@@ -115,6 +130,6 @@ exports.grassland = (root, config) => {
   middleware.getFileByReference =  getFileByReference;
   middleware.getCommitForRef = getCommitForRef;
   middleware.replaceBase = replaceBase;
-  
+  middleware.serveFile = serveFile
   return middleware;
 };

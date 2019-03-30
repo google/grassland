@@ -17,12 +17,10 @@
 const express = require('express');
 const {grassland} = require('./grassland');
 
-
 const app = express();
 const port = 3000;
 
-
-const getTagForHost = host => host.split('.')[0];
+const getTagForHost = req => req.header('HOST').split('.')[0];
 
 const repo = grassland('grassland',
                        {
@@ -33,17 +31,14 @@ const repo = grassland('grassland',
                       );
 app.use(repo);
 
-app.get('/', (req, res) => {
-  return Promise.all([ repo.getFileByReference('baby', 'public/index.html'),
-                       repo.getCommitForRef(getTagForHost(req.header('HOST')))])
-        .then(([fileText, commit]) =>  res.type('html').send(repo.replaceBase(fileText, commit)))
-    .catch(e => {
-      console.error(e);
-      res.status(500).send(e)
-    });
-}
-);
-       
+app.get('/',
+        (req, res) => 
+        repo.serveFile('public/index.html', getTagForHost(req))
+        .then((fileText) =>  res.type('html').send(fileText))
+        .catch(e => {
+          console.error(e);
+          res.status(500).send(e)
+        }));
 
 app.listen(port, () => console.log(`Example app listening on port ${port}!`));
 
