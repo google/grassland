@@ -2,15 +2,27 @@
   "name": "grassland",
   "version": "0.1.0",
   "description": "Git Static Distribution",
-  "main": "index.js",
+  "main": "dist/index.js",
   "dependencies": {
+    "@types/express": "^4.16.1",
     "express": "^4.16.4",
     "isomorphic-git": "^0.52.1",
-    "nodejs": "0.0.0"
+    "nodejs": "0.0.0",
+    "ts-node-dev": "^1.0.0-pre.32"
   },
-  "devDependencies": {},
+  "devDependencies": {
+    "jasmine": "^3.3.1",
+    "ts-node": "^5.0.0",
+    "tslint": "^5.9.1",
+    "typescript": "^2.9.2"
+  },
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "serve": "node dist/server.js",
+    "build": "npm run build-ts",
+    "build-ts": "tsc",
+    "tsc": "tsc",
+    "dev": "ts-node-dev --respawn --transpileOnly ./src/server.ts",
+    "prod": "tsc && node ./dist/server.js"
   },
   "author": "Michael Lorton",
   "license": "Apache-2.0"

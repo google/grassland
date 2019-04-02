@@ -14,13 +14,13 @@
  *    limitations under the License.
  */
 
-const express = require('express');
-const {grassland} = require('./grassland');
+import express = require('express');
+import {grassland} from './grassland';
 
 const app = express();
 const port = 3000;
 
-const getTagForHost = req => req.header('HOST').split('.')[0];
+const getTagForHost = (req: express.Request) => req.header('HOST').split('.')[0];
 
 const repo = grassland('grassland',
                        {
@@ -32,7 +32,7 @@ const repo = grassland('grassland',
 app.use(repo.middleware);
 
 app.get('/',
-        (req, res) => 
+        (req: express.Request, res: express.Response) => 
         repo.serveFile('public/index.html', getTagForHost(req), 'http://cdn.grassland.com:3000/')
         .then((fileText) =>  res.type('html').send(fileText))
         .catch(e => {
