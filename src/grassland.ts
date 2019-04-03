@@ -18,8 +18,7 @@ import express = require('express');
 
 import fs = require('fs');
 import git = require("isomorphic-git");
-
-const getNow = () => Date.now();
+import nowModule = require("./now");
 
 git.plugins.set('fs', fs)
 
@@ -33,7 +32,6 @@ const catchError = (res: express.Response) => (e: any) => {
 };
 
 const makePath = (p: string[]) => p.join('/');
-
 
 export interface GrasslandConfiguration {
   username?: string;
@@ -54,8 +52,6 @@ export interface GrasslandConfiguration {
 }
 
 export class Grassland {
-  git = git;
-  fs = fs;
 
   private readonly dir = this.config.storageDir;
 
@@ -64,7 +60,7 @@ export class Grassland {
   
   private checkRepo() {
     if (this.config.fetchTime > 0) {
-      const now = getNow();
+      const now = nowModule.getNow();
       if (!fs.existsSync(this.dir)) {
         const cloneInfo = {
           username: this.config.username,
@@ -80,7 +76,7 @@ export class Grassland {
           headers: this.config.headers,
         };
         this.lastFetchedTime = now;
-        this.fetchCheck = this.git.clone({ dir: this.dir, noCheckout: true, ...cloneInfo });
+        this.fetchCheck = git.clone({ dir: this.dir, noCheckout: true, ...cloneInfo });
       } else if ( (now - this.lastFetchedTime) > (this.config.fetchTime * 60 * 1000)) {
         const pullInfo = {
           username: this.config.username,
@@ -90,7 +86,7 @@ export class Grassland {
           headers: this.config.headers,
         };
         this.lastFetchedTime = now;
-        this.fetchCheck = this.git.pull({ dir: this.dir, ...pullInfo });
+        this.fetchCheck = git.pull({ dir: this.dir, ...pullInfo });
       }
     }
     return this.fetchCheck;
@@ -103,8 +99,8 @@ export class Grassland {
    */
   getFileByReference(filepath: string, ref: string) {
     return this.checkRepo()
-      .then(() => this.git.resolveRef({ dir: this.dir, ref}))
-      .then((oid) => this.git.readObject({ dir: this.dir,oid, filepath, encoding: 'utf8' }))
+      .then(() => git.resolveRef({ dir: this.dir, ref}))
+      .then((oid) => git.readObject({ dir: this.dir,oid, filepath, encoding: 'utf8' }))
       .then((blob) => blob.object);
   }
   
@@ -114,7 +110,7 @@ export class Grassland {
    */
   getCommitForRef(ref: string) {
     return this.checkRepo()
-      .then(() => this.git.resolveRef({ dir: this.dir,ref }));
+      .then(() => git.resolveRef({ dir: this.dir,ref }));
   }
   
   /**
@@ -149,16 +145,7 @@ export class Grassland {
   readonly middleware: express.RequestHandler;
   
   constructor(private readonly root: string,
-              private readonly config: GrasslandConfiguration,
-              private readonly inject = {}) {
-    /**
-     * For testing ONLY -- you can inject replacement mocks for fs, git, and now()
-     const {fs, git, getNow} = Object.assign({
-     fs: realFs,
-     git: isomorphicGit,
-     getNow: realNow,
-     }, inject);
-    */
+              private readonly config: GrasslandConfiguration,) {
 
     /**
      * the redirect sent in response to a request-by-commit or a file sent in request
@@ -179,7 +166,7 @@ export class Grassland {
      */
     this.middleware = (req: express.Request,
                        res: express.Response,
-                       next: express.NextFunction): void => {
+                       next: express.NextFunction): Promise<unknown> => {
       const [command, reqtype, refId, ...path] = req.path.split('/').filter(p => p);
       const resolveCommit = (sha: string) => this.checkRepo().then(() => sha);
 
@@ -189,7 +176,7 @@ export class Grassland {
           const getCommit = isCommit ? resolveCommit: ((s: string) => this.getCommitForRef(s));
           const filepath = (this.config.prefix || '') + makePath(path);
 
-          getCommit(refId).then((oid) => this.git.readObject({ dir: this.dir, oid, filepath }))
+          return getCommit(refId).then((oid) => git.readObject({ dir: this.dir, oid, filepath }))
             .then((blob) => res
                   .set(isCommit ? {'ETag': blob.oid, ...permanentHeaders,}: {})
                   .redirect(isCommit? 301: 302,
@@ -203,8 +190,8 @@ export class Grassland {
           return;
         } else if (reqtype === 'blob') {
           const oid = refId;
-          this.checkRepo()
-            .then(() => this.git.readObject({ dir: this.dir, oid}))
+          return this.checkRepo()
+            .then(() => git.readObject({ dir: this.dir, oid}))
             .then(({oid, object}) => res
                   .set({'ETag': oid, ...permanentHeaders,})
                   .type(last(path))
@@ -221,4 +208,3 @@ export class Grassland {
 export function grassland(root: string, config: GrasslandConfiguration) {
   return new Grassland(root, config);
 }
-
