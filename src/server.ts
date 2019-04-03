@@ -20,25 +20,30 @@ import {grassland} from './grassland';
 const app = express();
 const port = 3000;
 
+/**
+ * for demonstration purposes, the assumption is that the first bit of the 
+ * domain is also the name of the tag that should be served.
+ */
 const getTagForHost = (req: express.Request) => req.header('HOST').split('.')[0];
 
-const repo = grassland('grassland',
-                       {
-                         storageDir: '/Users/mlorton/testrepos/vpc-4',
-                         url: "https://github.com/Malvolio/grassland-demo.git",
-                         prefix: 'public/',
-                       }
-                      );
+const repo = grassland('grassland', {
+  storageDir: '/Users/mlorton/testrepos/vpc-4',
+  url: "https://github.com/Malvolio/grassland-demo.git",
+  prefix: 'public/',
+});
+
 app.use(repo.middleware);
 
 app.get('/',
         (req: express.Request, res: express.Response) => 
-        repo.serveFile('public/index.html', getTagForHost(req), 'http://cdn.grassland.com:3000/')
-        .then((fileText) =>  res.type('html').send(fileText))
+        repo.serveFile('public/index.html',
+                       getTagForHost(req),
+                       'http://cdn.grassland.com:3000/')
+        .then((fileText) => res.type('html').send(fileText))
         .catch(e => {
           console.error(e);
           res.status(500).send(e)
         }));
 
-app.listen(port, () => console.log(`Example app listening on port ${port}!`));
+app.listen(port, () => console.log(`Grassland example app listening on port ${port}!`));
 
