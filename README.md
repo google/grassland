@@ -43,7 +43,8 @@ their meanings [there](https://isomorphic-git.org/docs/en/clone).
 * relative
 * headers
 
-Of these, only `url` is required.  There are a few Grassland-specific
+Of these, only `url` is required -- at least by the software: your
+repo may require you to add other security infomration .  There are a few Grassland-specific
 fields too:
 
 * prefix -- a prefix added to the path coming from the CDN before it
@@ -74,7 +75,7 @@ finding a line that looks like this:
 
     <base href="/" >
 
-then modifying looks like this:
+then modify it to look like this:
 
     <base href="https://example.thiscdn.com/commit/63a4fe21/" >
 
@@ -99,10 +100,9 @@ app.get('/', (req, res) =>
 ## TODO
 
 
-* add the CDN handling
 * Security -- right now, the code assumes that your repos is supposed
   to be entirely public, every version of every file.  Obviously, this
-  isn't the case universal.  In the next version, the config will also
+  isn't the case universally.  In an upcoming version, the config will also
   take two optional lambdas:
 1. reference verifier: when a file is requested by tag or branch, this
    function will be called with the tag or branch name as an
@@ -113,28 +113,7 @@ app.get('/', (req, res) =>
 2. path verifier: whenever a file is requested (except through a
    blob-id), this function will be called with the path.  The return
    will be interpreted as above.
-   
-
-## 
-
-1. Check it out from GitHub.
-    * There is no reason to fork it.
-1. Create a new local repository and copy the files from this repo into it.
-1. Modify README.md and CONTRIBUTING.md to represent your project, not the
-   template project.
-1. Develop your new project!
-
-``` shell
-git clone https://github.com/google/new-project
-mkdir my-new-thing
-cd my-new-thing
-git init
-cp ../new-project/* .
-git add *
-git commit -a -m 'Boilerplate for new Google open source project'
-```
-
-
+*   better tests
 
 
 
