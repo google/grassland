@@ -19,7 +19,7 @@ The Grassland middleware can be installed like this:
 ``` javascript
      const repo = grassland(path, config)
      app.use(repo);
-     ```
+```
 
 The path is where the static content will be served from, so if it is
 set to 'static', you should configure the CDN to use
