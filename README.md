@@ -19,7 +19,7 @@ The Grassland middleware can be installed like this:
 ``` javascript
      const repo = grassland(path, config)
      app.use(repo);
-     ````
+     ```
 
 The path is where the static content will be served from, so if it is
 set to 'static', you should configure the CDN to use
@@ -44,7 +44,7 @@ their meanings [there](https://isomorphic-git.org/docs/en/clone).
 * headers
 
 Of these, only `url` is required -- at least by the software: your
-repo may require you to add other security infomration .  There are a few Grassland-specific
+repo may require you to add other security information .  There are a few Grassland-specific
 fields too:
 
 * prefix -- a prefix added to the path coming from the CDN before it
@@ -113,8 +113,9 @@ app.get('/', (req, res) =>
 2. path verifier: whenever a file is requested (except through a
    blob-id), this function will be called with the path.  The return
    will be interpreted as above.
-*   better tests
-
+* better tests
+* a strategy for dealing with compiled static files
+* a strategy for dealing with robots
 
 
 Copyright 2019 Google LLC

@@ -1,61 +1,99 @@
-Solved problem:
-content distribution
-Problem:
-Distribute static content efficiently world-wide
-Solution:
-Network of “edge servers” situated all over the world, caching content locally near users
+# The problem
+
+Okay, here's a problem: content distribution
+
+You've got a web-site that has a lot of static content and you need
+that static content to be available very quickly to browsers all over
+the world, without it costing you a fortune.
+
+Luckily, this is a solved problem.  It is called a
+"content-distribution network", a group of  “edge servers” situated all over
+the world, caching content locally near users.  If the user needs a
+file from you, they ask the nearest edge server; only if the server
+doesn't have the file in its own cache does it go and ask your server
+for it.
+
+Here's another problem: version management
+
+You've got a web-site that has a lot of static content and you need
+to update that content.  You might have multiple version of the same
+file; you might need to know the history of each file; you might even
+have to roll back changes.
+
+Again, a solved problem.  There are many version-control products out
+there. Git is probably the most popular and that's the one I'll be
+talking about.
+
+Here is another problem: distribution of versioned content
+
+You've got a web-site that has a lot of static content under version
+management *and* you need to distribute that content worldwide.
+
+That was not previously a solved problem
+
+# The solution (in the abstract)
+
+Obviously, people have found some way to solve this problem; there are
+thousands or millions of web-sites that distribute versioned content
+and each one has found some solution.  Most of those solutions are
+pretty clunky.
+
+A product that allows the customer to issue releases of versioned
+data:
+
+* simple -- performing a release has to be one step or very few steps
+* reliable -- hand in hand with simple, the release, and the
+subsequent distribution of that release, has to work without much
+human intervention
+* instantaneous -- in a worldwide environment, it isn't reasonable to
+bring the site down, even for a few minutes, "in the middle of the
+night", because of course, worldwide, there is no middle of the
+night.  It's always a busy time somewhere.
+* atomic -- it is quite important that a user never be stuck between
+releases.  Files, particularly HTML, often refer to each other, and if
+a user is seeing some files from one release and some files from
+another, the site might not function properly.
+* high-performance -- in practice, fairly few files are changed from
+one release to the next; unchanged files should not be evicted from
+the cache.
+* multi-version -- some sites need to have several versions live at
+  the same time, e.g. production, stage, demo, white-label.
 
 
 
 
-Solved problem:
-version management
-Problem:
-Preserve multiple versions of files
-Solution:
-VCS products like Git
+# Background: CDN
+
+A CDN is a network of “edge servers” caching data close to the user,
+wherever they are.  A CDN typically serves hundred or thousands of
+web-sites. Each web-site has a single “origin server” that supplies
+the data.
+
+Most CDNs supports two types of origin servers:
+* data-buckets -- the CDN had a big file server somewhere and allows
+  you to upload files there. 
+* http --  you maintain a  web server solely to answer queries from
+  the CDN. 
 
 
+# Problems with CDN deployment
+
+If you use a data-bucket-style CDN for your web-site, then you have a
+problem.  Actually, several problem.
+
+First, you have come up with some snapshot/upload strategy.  There
+are, I believe, some plugins for WebPack that will help but still, you
+have to do.
+
+Then of course, you don't have a good caching strategy.  How does a
+cache know whether the version of a file that it has is the most
+recent one?  How does it even ask?
+
+Worse, if a user comes to the site at the wrong time, Potentially inconsistent
+
+Single version only 
 
 
-Unsolved problem:
-distribution of versioned content
-Problem:
-Distribute versioned static content efficiently world-wide
-
-
-
-What
-For the customer:
-A product that allows the customer to issue releases of versioned code and data that are
-Simple
-Reliable
-Instantaneous
-Atomic
-High-performance 
-Multi-version (production, stage, white-label)
-
-
-Who
-Small-to-medium businesses that
-operate a web app 
-distribute significant static content
-need frequent updates to content 
-have small (or no) operations staff
-use Git
-
-
-Background: CDN
-Network of “edge servers” cache data close to user
-Single “origin server” supplying data
-Currently Google Cloud CDN supports two types of origin servers:
-Google load-balancer
-Google data-buckets
-
-All of the (current) edge servers for Google Cloud CDN
-
-Problems with
-CDN deployment
 Load-balancer:
 Requires (complex, expensive) instance/instance group behind it
 New release requires reboot:
@@ -65,10 +103,7 @@ Single version only
 Potentially inconsistent
 No built-in caching strategy
 Data-bucket:
-Requires custom snapshot/upload strategy
-Weak caching strategy
-Single version only
-Potentially inconsistent
+
 
 Background: Git
 Keeps every version of every file
