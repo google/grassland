@@ -80,7 +80,7 @@ then modify it to look like this:
     <base href="https://example.thiscdn.com/commit/63a4fe21/" >
 
 
-where 63a4fe21 is the commit is the one currently pointed to by some
+where 63a4fe21 is the commit currently pointed to by some
 specific tag (perhaps "live" or "prod" or something like that).  This
 can be accomplished by a method called `serveFile()`
 
@@ -100,7 +100,10 @@ app.get('/', (req, res) =>
 ## TODO
 
 
-* Security -- right now, the code assumes that your repos is supposed
+* better tests
+* a strategy for dealing with compiled static files
+* a strategy for dealing with robots
+* some security -- right now, the code assumes that your repos is supposed
   to be entirely public, every version of every file.  Obviously, this
   isn't the case universally.  In an upcoming version, the config will also
   take two optional lambdas:
@@ -113,9 +116,6 @@ app.get('/', (req, res) =>
 2. path verifier: whenever a file is requested (except through a
    blob-id), this function will be called with the path.  The return
    will be interpreted as above.
-* better tests
-* a strategy for dealing with compiled static files
-* a strategy for dealing with robots
 
 
 Copyright 2019 Google LLC
