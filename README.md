@@ -3,7 +3,7 @@
 This is a Node implementation of the Grassland protocol, suitable for
 use as Express middleware.
 
-See [here](./grassland.md) for a discussion of what the Grassland
+See [here](./docs/grassland.md) for a discussion of what the Grassland
 protocol is and why you want to use it.
 
 ## Disclaimer
@@ -103,19 +103,10 @@ app.get('/', (req, res) =>
 * better tests
 * a strategy for dealing with compiled static files
 * a strategy for dealing with robots
-* some security -- right now, the code assumes that your repos is supposed
-  to be entirely public, every version of every file.  Obviously, this
-  isn't the case universally.  In an upcoming version, the config will also
-  take two optional lambdas:
-1. reference verifier: when a file is requested by tag or branch, this
-   function will be called with the tag or branch name as an
-   argument.  If the function returns None, the request will be
-   honored.  If it returns a number, the request will be declined with
-   that number as the status code (I expect 404 or 403 will be the
-   usual status).
-2. path verifier: whenever a file is requested (except through a
-   blob-id), this function will be called with the path.  The return
-   will be interpreted as above.
+* [stronger security](https://github.com/google/grassland/issues/3) --
+  right now, the code assumes that everything under the "root" given
+  for your repo is supposed to be entirely public, every version of
+  every file.  Obviously, this isn't the case universally.
 
 
 Copyright 2019 Google LLC
