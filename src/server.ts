@@ -27,9 +27,10 @@ const port = 3000;
 const getTagForHost = (req: express.Request) => req.header('HOST').split('.')[0];
 
 const repo = grassland('grassland', {
-  storageDir: '/Users/mlorton/testrepos/vpc-4',
+  storageDir: '/Users/mlorton/testrepos/vpc-0',
   url: "https://github.com/Malvolio/grassland-demo.git",
   prefix: 'public/',
+  fetchTime: 1,
 });
 
 app.use(repo.middleware);
