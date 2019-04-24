@@ -2,6 +2,10 @@
   "name": "grassland",
   "version": "0.1.0",
   "description": "Git Static Distribution",
+  "repository": "google/grassland",
+  "publishConfig":{
+    "registry":"https://wombat-dressing-room.appspot.com"
+  },
   "main": "dist/grassland.js",
   "types": "dist/grassland.d.ts",
   "keywords": [
