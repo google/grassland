@@ -1,6 +1,6 @@
 # Grassland
 
-[![CircleCI](https://circleci.com/gh/google/grassland.svg?style=svg)](https://circleci.com/gh/google/grassland) 
+[![CircleCI](https://img.shields.io/circleci/project/github/google/grassland/master.svg)](https://circleci.com/gh/google/grassland) 
 
 This is a Node implementation of the Grassland protocol, suitable for
 use as Express middleware.
@@ -20,12 +20,12 @@ It is an open-source product released under the Apache 2.0 licence
 The Grassland middleware can be installed like this:
 
 ``` javascript
-     const repo = grassland(path, config)
+     const repo = grassland('/static', config)
      app.use(repo);
 ```
 
-The path is where the static content will be served from, so if it is
-set to 'static', you should configure the CDN to use
+The first argument gives the path where the content will be served from, so since it is
+set to '/static', you should configure the CDN to use
 `http://example.com/static` as the origin server.
 
 The config is an object that controls the details of the the
@@ -73,7 +73,7 @@ right commit.  Since this can be tricky, Grassland provides some
 functions that will do the work.
 
 The assumption is that there is a single HTML file, served typically
-from the root, which is created by taking an file from the repo and
+from the root, which is created by taking a file from the repo and
 finding a line that looks like this:
 
     <base href="/" >
