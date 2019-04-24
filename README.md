@@ -1,10 +1,13 @@
 # Grassland
 
+[![CircleCI](https://circleci.com/gh/google/grassland.svg?style=svg)](https://circleci.com/gh/google/grassland) 
+
 This is a Node implementation of the Grassland protocol, suitable for
 use as Express middleware.
 
 See [here](./docs/grassland.md) for a discussion of what the Grassland
 protocol is and why you want to use it.
+
 
 ## Disclaimer
 
