@@ -39,7 +39,7 @@ app.get('/',
         (req: express.Request, res: express.Response) => 
         repo.serveFile('public/index.html',
                        getTagForHost(req),
-                       'http://cdn.grassland.com:3000/')
+                       'http://cdn.grassland.com:3000/grassland/')
         .then((fileText) => res.type('html').send(fileText))
         .catch(e => {
           console.error(e);

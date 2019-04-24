@@ -123,7 +123,7 @@ export class Grassland {
    */
   replaceBase(fileText: string, commit: string, cdn: string) {
     const baseRE = /(<base\s+href=")\/("\s*)/i 
-    return fileText.replace(baseRE, '$1' + makePath([ cdn || '', this.root , 'commit', commit, '']) + '$2');
+    return fileText.replace(baseRE, '$1' + makePath([ cdn || ('/' + this.root) , 'commit', commit, '']) + '$2');
   }
   
   /**
