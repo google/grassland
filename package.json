@@ -14,7 +14,7 @@
   ],
   "dependencies": {
     "express": "^4.16.4",
-    "isomorphic-git": "^0.52.1",
+    "isomorphic-git": "^1.8.2",
     "nodejs": "0.0.0",
     "ts-node-dev": "^1.0.0-pre.32"
   },
